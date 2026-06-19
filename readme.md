@@ -1,107 +1,77 @@
-# Первоначальная настройка проекта TeamFinder
+**TeamFinder**
+
+
+# Технологии
+Python 3.12+
+Django 5.2
+PostgreSQL
+Pillow (генерация аватаров)
+python-decouple (настройки через .env)
+Локальный запуск
 
 ## 1. Виртуальное окружение
+`python -m venv venv`
 
-Перед началом работы необходимо создать и активировать виртуальное окружение Python.  
+## Активация:
+
+# Windows (PowerShell): 
+`venv\Scripts\Activate.ps1`
+# Windows (cmd):
+ `venv\Scripts\activate`
+# Linux/Mac:
+ `source venv/bin/activate`
 
 
-1. **Создайте виртуальное окружение (в папке проекта):**
-   ```bash
-   python3 -m venv venv
-   ```
+## Установка зависимостей:
+ `pip install -r requirements.txt`
 
-   После этого появится папка `venv`, где будут храниться зависимости проекта.
 
-2. **Активируйте окружение:**
+## 2. Файл .env
 
-    - **Windows (PowerShell):**
-      ```bash
-      venv\Scripts\Activate.ps1
-      ```
-    - **Windows (cmd):**
-      ```bash
-      venv\Scripts\activate
-      ```
-    - **Linux/Mac:**
-      ```bash
-      source venv/bin/activate
-      ```
+# Скопируйте пример и укажите параметры окружения:
+ `cp .env_example .env`
 
-3. **Установите зависимости из `requirements.txt`:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Пример заполнения .env:
+DJANGO_SECRET_KEY=change_me
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-   После установки в окружении будут доступны все нужные библиотеки Django-проекта.
+POSTGRES_DB=team_finder
+POSTGRES_USER=team_finder
+POSTGRES_PASSWORD=team_finder
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
 
-## 2. Создание `.env`
+TASK_VERSION=1`
 
-Файл `.env` содержит конфиденциальные настройки проекта — ключ Django, параметры БД и другие переменные.  
+## 3. PostgreSQL через Docker
 
-Особое внимание обратите на строчку `TASK_VERSION=`. 
-Добавьте число, которое соответствует вашему варианту задания. 
-Этот параметр определяет, какие шаблоны использовать для сайта (из папок `templates_var1`/`templates_var2`/`templates_var3`).
-Лишние две папки не из вашего варианта можно удалить.
+# Запуск: 
+`docker compose up -d`
 
-В репозитории есть пример `.env_example`, который нужно скопировать и заполнить:
+# Остановить контейнеры:
+ `docker compose down`
 
-```bash
-cp .env_example .env
-```
+## 4. Миграции
+`python manage.py migrate`
 
-После этого откройте `.env` и укажите свои значения.  
+5. ## Тестовые данные (опционально)
 
-| Переменная            | Назначение                                                                                                                                                 |
-|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **DJANGO_SECRET_KEY** | Секретный ключ Django, используемый для подписи cookie и токенов. Можно сгенерировать при помощи `get_random_secret_key` из `django.core.management.utils` |
-| **DJANGO_DEBUG**      | Режим отладки. Установите `True` во время разработки.                                                                                                      |
-| **POSTGRES_DB**       | Имя базы данных PostgreSQL, которую будет использовать Django.                                                                                             |
-| **POSTGRES_USER**     | Имя пользователя PostgreSQL.                                                                                                                               |
-| **POSTGRES_PASSWORD** | Пароль пользователя PostgreSQL.                                                                                                                            |
-| **POSTGRES_HOST**     | Адрес сервера БД. В случае локальной разработки localhost.                                                                                                 |
-| **POSTGRES_PORT**     | Порт подключения к БД (по умолчанию `5432`).                                                                                                               |
-| **TASK_VERSION**      | Номер варианта вашего задания. Используется для определения набора HTML-шаблонов.                                                                          |
+# Команда создаёт нескольких пользователей и проекты:
+ `python manage.py seed_demo`
 
----
+# Данные для входа (пароль одинаковый):
+anton@example.com / demo12345
+dmitriy@example.com / demo12345
+lector@example.com / demo12345
 
-## 3. Запуск PostgreSQL
+# Создание пользователя с доступом в Админ-панель:
+ `python manage.py createsuperuser`
 
-Для работы приложения **TeamFinder** используется база данных **PostgreSQL**.
-По условию задания база данных должна запускаться в контейнере Docker.
+## 6. Запуск сервера
+`python manage.py runserver`
 
-В проекте уже есть пример файла `docker-compose.yml`. 
-Используйте готовый или измените под свои нужды, а дальше запускайте:
+# Проект доступен по адресу: *http://localhost:8000*
 
-```bash
-docker compose up -d
-```
-
-`-d` значит `detach`, то есть контейнер продолжит работать в фоне. Чтобы его остановить, надо будет ввести
-
-```bash
-docker compose down
-```
-
-Если возникает ошибка "permission denied while trying to connect to the Docker daemon socket", то может потребоваться добавить `sudo` перед командой.
-
----
-
-После этого база данных будет доступна по адресу `localhost:5432`.  
-Нужно будет использовать эти же параметры в файле `.env`.
-
-> Если на компьютере уже развёрнут сервер БД на порте 5432, и вы не хотите создавать БД для этого проекта на этом сервере, целесообразнее будет изменить порт на нестандартный.
-> Нестандартный порт нужно будет поставить слева в паре портов в docker-compose (`"5433":"5432"`) и в .env.
-
-## 4. Запуск Django
-
-После заполнения `.env` и настройки базы данных можно запустить сервер разработки:
-
-```bash
-python manage.py runserver
-```
-
-Теперь проект доступен по адресу [http://localhost:8000](http://localhost:8000). 
-Если видите ракету с надписью "The install worked successfully! Congratulations!", то запуск прошёл успешно, Django работает!
-Осталось всего ничего: реализовать весь проект!
-
-Если в процессе разработки способ развертывания приложения поменяется, обновите `readme.md` с пометкой ревьюеру, как запускать и проверять приложение.
+# Запуск тестов
+`python manage.py test`

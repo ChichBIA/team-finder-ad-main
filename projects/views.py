@@ -53,9 +53,7 @@ def project_detail(request, project_id):
 
 @login_required
 def favorite_projects(request):
-    projects = request.user.favorites.select_related("owner").prefetch_related(
-        "participants"
-    )
+    projects = request.user.favorites.select_related("owner").prefetch_related("participants")
 
     page_obj = paginate_queryset(
         projects,
@@ -135,25 +133,37 @@ def toggle_favorite(request, project_id):
             status=HTTPStatus.UNAUTHORIZED,
         )
 
-    project = get_object_or_404(Project, pk=project_id)
-    favorites = request.user.favorites
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
 
+    favorites = request.user.favorites
     if favorites.filter(pk=project.id).exists():
         favorites.remove(project)
-        favorited = False
+        favored = False
     else:
         favorites.add(project)
-        favorited = True
+        favored = True
 
-    return JsonResponse({"status": "ok", "favorited": favorited})
+    return JsonResponse({"status": "ok", "favorited": favored})
 
 
 @require_POST
 @login_required
 def toggle_participate(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
-    participants = project.participants
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
 
+    participants = project.participants
     if participants.filter(pk=request.user.id).exists():
         participants.remove(request.user)
         is_participant = False
@@ -167,11 +177,25 @@ def toggle_participate(request, project_id):
 @require_POST
 @login_required
 def complete_project(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
+
     if project.owner != request.user and not request.user.is_staff:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.FORBIDDEN)
+        return JsonResponse(
+            {"status": "error", "detail": "forbidden"},
+            status=HTTPStatus.FORBIDDEN,
+        )
+
     if project.status != Project.Status.OPEN:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.BAD_REQUEST)
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_open"},
+            status=HTTPStatus.BAD_REQUEST,
+        )
 
     project.status = Project.Status.CLOSED
     project.save(update_fields=["status"])
@@ -186,16 +210,27 @@ def skills_search(request):
 
     skills = Skill.objects.filter(name__icontains=query)[:SKILLS_SEARCH_LIMIT]
     return JsonResponse(
-        [{"id": skill.id, "name": skill.name} for skill in skills], safe=False
+        [{"id": skill.id, "name": skill.name} for skill in skills],
+        safe=False,
     )
 
 
 @require_POST
 @login_required
 def skills_add(request, project_id):
-    project = get_object_or_404(Project, pk=project_id)
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
+
     if project.owner != request.user and not request.user.is_staff:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.FORBIDDEN)
+        return JsonResponse(
+            {"status": "error", "detail": "forbidden"},
+            status=HTTPStatus.FORBIDDEN,
+        )
 
     try:
         payload = json.loads(request.body or "{}")
@@ -205,13 +240,23 @@ def skills_add(request, project_id):
     skill = None
     skill_id = payload.get("skill_id")
     if skill_id:
-        skill = get_object_or_404(Skill, pk=skill_id)
+        try:
+            skill = Skill.objects.get(pk=skill_id)
+        except Skill.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "detail": "skill_not_found"},
+                status=HTTPStatus.NOT_FOUND,
+            )
     else:
         name = (payload.get("name") or "").strip()
         if not name:
-            return JsonResponse({"status": "error"}, status=HTTPStatus.BAD_REQUEST)
+            return JsonResponse(
+                {"status": "error", "detail": "name_required"},
+                status=HTTPStatus.BAD_REQUEST,
+            )
         skill, _ = Skill.objects.get_or_create(
-            name__iexact=name, defaults={"name": name}
+            name__iexact=name,
+            defaults={"name": name}
         )
 
     project.skills.add(skill)
@@ -221,10 +266,27 @@ def skills_add(request, project_id):
 @require_POST
 @login_required
 def skills_remove(request, project_id, skill_id):
-    project = get_object_or_404(Project, pk=project_id)
-    if project.owner != request.user and not request.user.is_staff:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.FORBIDDEN)
+    try:
+        project = Project.objects.get(pk=project_id)
+    except Project.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "project_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
 
-    skill = get_object_or_404(Skill, pk=skill_id)
+    if project.owner != request.user and not request.user.is_staff:
+        return JsonResponse(
+            {"status": "error", "detail": "forbidden"},
+            status=HTTPStatus.FORBIDDEN,
+        )
+
+    try:
+        skill = Skill.objects.get(pk=skill_id)
+    except Skill.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "skill_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
+
     project.skills.remove(skill)
     return JsonResponse({"status": "ok"})

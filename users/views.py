@@ -19,6 +19,12 @@ from team_finder.pagination import (
 
 from .forms import LoginForm, ProfileEditForm, RegistrationForm
 from .models import User
+from .constants import (
+    FILTER_OWNERS_OF_FAVORITE_PROJECTS,
+    FILTER_OWNERS_OF_PARTICIPATING_PROJECTS,
+    FILTER_INTERESTED_IN_MY_PROJECTS,
+    FILTER_PARTICIPANTS_OF_MY_PROJECTS,
+)
 
 
 def register(request):
@@ -32,7 +38,6 @@ def register(request):
         return redirect("projects:list")
 
     form = RegistrationForm()
-
     return render(request, "users/register.html", {"form": form})
 
 
@@ -78,14 +83,10 @@ def edit_profile(request):
         return redirect("users:detail", user_id=request.user.id)
 
     form = ProfileEditForm(instance=request.user)
-
     return render(
         request,
         "users/edit_profile.html",
-        {
-            "form": form,
-            "user": request.user,
-        },
+        {"form": form, "user": request.user},
     )
 
 
@@ -104,23 +105,31 @@ def change_password(request):
 
 
 def participants_list(request):
-    participants = User.objects.all()
+    # Оптимизация: подгружаем связанные объекты для избежания N+1
+    participants = User.objects.prefetch_related(
+        "owned_projects",
+        "participated_projects",
+        "favorites",
+        "skills",
+    )
     active_filter = None
 
     filter_value = request.GET.get("filter")
     if request.user.is_authenticated and filter_value:
         active_filter = filter_value
-        if filter_value == "owners-of-favorite-projects":
+        if filter_value == FILTER_OWNERS_OF_FAVORITE_PROJECTS:
             participants = User.objects.filter(
                 owned_projects__in=request.user.favorites.all()
             ).distinct()
-        elif filter_value == "owners-of-participating-projects":
+        elif filter_value == FILTER_OWNERS_OF_PARTICIPATING_PROJECTS:
             participants = User.objects.filter(
                 owned_projects__in=request.user.participated_projects.all()
             ).distinct()
-        elif filter_value == "interested-in-my-projects":
-            participants = User.objects.filter(favorites__owner=request.user).distinct()
-        elif filter_value == "participants-of-my-projects":
+        elif filter_value == FILTER_INTERESTED_IN_MY_PROJECTS:
+            participants = User.objects.filter(
+                favorites__owner=request.user
+            ).distinct()
+        elif filter_value == FILTER_PARTICIPANTS_OF_MY_PROJECTS:
             participants = (
                 User.objects.filter(participated_projects__owner=request.user)
                 .exclude(pk=request.user.pk)
@@ -152,16 +161,27 @@ def skills_search(request):
 
     skills = Skill.objects.filter(name__icontains=query)[:SKILLS_SEARCH_LIMIT]
     return JsonResponse(
-        [{"id": skill.id, "name": skill.name} for skill in skills], safe=False
+        [{"id": skill.id, "name": skill.name} for skill in skills],
+        safe=False,
     )
 
 
 @require_POST
 @login_required
 def skills_add(request, user_id):
-    target_user = get_object_or_404(User, pk=user_id)
+    try:
+        target_user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "user_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
+
     if request.user != target_user and not request.user.is_staff:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.FORBIDDEN)
+        return JsonResponse(
+            {"status": "error", "detail": "forbidden"},
+            status=HTTPStatus.FORBIDDEN,
+        )
 
     try:
         payload = json.loads(request.body or "{}")
@@ -171,13 +191,23 @@ def skills_add(request, user_id):
     skill = None
     skill_id = payload.get("skill_id")
     if skill_id:
-        skill = get_object_or_404(Skill, pk=skill_id)
+        try:
+            skill = Skill.objects.get(pk=skill_id)
+        except Skill.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "detail": "skill_not_found"},
+                status=HTTPStatus.NOT_FOUND,
+            )
     else:
         name = (payload.get("name") or "").strip()
         if not name:
-            return JsonResponse({"status": "error"}, status=HTTPStatus.BAD_REQUEST)
+            return JsonResponse(
+                {"status": "error", "detail": "name_required"},
+                status=HTTPStatus.BAD_REQUEST,
+            )
         skill, _ = Skill.objects.get_or_create(
-            name__iexact=name, defaults={"name": name}
+            name__iexact=name,
+            defaults={"name": name},
         )
 
     target_user.skills.add(skill)
@@ -187,10 +217,27 @@ def skills_add(request, user_id):
 @require_POST
 @login_required
 def skills_remove(request, user_id, skill_id):
-    target_user = get_object_or_404(User, pk=user_id)
-    if request.user != target_user and not request.user.is_staff:
-        return JsonResponse({"status": "error"}, status=HTTPStatus.FORBIDDEN)
+    try:
+        target_user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "user_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
 
-    skill = get_object_or_404(Skill, pk=skill_id)
+    if request.user != target_user and not request.user.is_staff:
+        return JsonResponse(
+            {"status": "error", "detail": "forbidden"},
+            status=HTTPStatus.FORBIDDEN,
+        )
+
+    try:
+        skill = Skill.objects.get(pk=skill_id)
+    except Skill.DoesNotExist:
+        return JsonResponse(
+            {"status": "error", "detail": "skill_not_found"},
+            status=HTTPStatus.NOT_FOUND,
+        )
+
     target_user.skills.remove(skill)
     return JsonResponse({"status": "ok"})

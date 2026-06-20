@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0006_rename_user_name_fields_back'),
+        ("users", "0006_rename_user_name_fields_back"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='name',
-            field=models.CharField(max_length=124, verbose_name='name'),
+            model_name="user",
+            name="name",
+            field=models.CharField(max_length=124, verbose_name="name"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='surname',
-            field=models.CharField(max_length=124, verbose_name='surname'),
+            model_name="user",
+            name="surname",
+            field=models.CharField(max_length=124, verbose_name="surname"),
         ),
     ]

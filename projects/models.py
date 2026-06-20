@@ -7,6 +7,7 @@ from team_finder.constants import (
     SKILL_NAME_MAX_LENGTH,
 )
 
+
 class Skill(models.Model):
     name = models.CharField("name", max_length=SKILL_NAME_MAX_LENGTH, unique=True)
 
@@ -46,7 +47,9 @@ class Project(models.Model):
         blank=True,
         verbose_name="participants",
     )
-    skills = models.ManyToManyField(Skill, related_name="projects", blank=True, verbose_name="skills")
+    skills = models.ManyToManyField(
+        Skill, related_name="projects", blank=True, verbose_name="skills"
+    )
 
     class Meta:
         verbose_name = "project"

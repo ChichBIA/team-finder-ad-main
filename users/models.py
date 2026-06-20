@@ -4,12 +4,20 @@ from pathlib import Path
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.core.files.base import ContentFile
 from django.db import models
 from PIL import Image, ImageDraw, ImageFont
 
-from team_finder.constants import USER_ABOUT_MAX_LENGTH, USER_NAME_MAX_LENGTH, USER_PHONE_MAX_LENGTH
+from team_finder.constants import (
+    USER_ABOUT_MAX_LENGTH,
+    USER_NAME_MAX_LENGTH,
+    USER_PHONE_MAX_LENGTH,
+)
 
 
 class UserManager(BaseUserManager):
@@ -40,7 +48,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField("name", max_length=USER_NAME_MAX_LENGTH)
     surname = models.CharField("surname", max_length=USER_NAME_MAX_LENGTH)
     avatar = models.ImageField("avatar", upload_to="avatars/", blank=True)
-    phone = models.CharField("phone", max_length=USER_PHONE_MAX_LENGTH, blank=True, null=True, unique=True)
+    phone = models.CharField(
+        "phone", max_length=USER_PHONE_MAX_LENGTH, blank=True, null=True, unique=True
+    )
     github_url = models.URLField("github url", blank=True)
     about = models.TextField("about", max_length=USER_ABOUT_MAX_LENGTH, blank=True)
     is_active = models.BooleanField(default=True)
@@ -112,7 +122,12 @@ def _hex_to_rgb(value):
 
 
 def _load_avatar_font(size):
-    font_path = Path(settings.BASE_DIR) / "static" / "fonts" / "Neue_Haas_Grotesk_Display_Pro_75_Bold.otf"
+    font_path = (
+        Path(settings.BASE_DIR)
+        / "static"
+        / "fonts"
+        / "Neue_Haas_Grotesk_Display_Pro_75_Bold.otf"
+    )
     font_size = int(size * 0.5)
     if font_path.exists():
         try:

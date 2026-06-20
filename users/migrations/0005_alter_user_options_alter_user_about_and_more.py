@@ -6,47 +6,55 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0004_rename_user_name_fields'),
+        ("users", "0004_rename_user_name_fields"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='user',
-            options={'ordering': ['-id'], 'verbose_name': 'user', 'verbose_name_plural': 'users'},
+            name="user",
+            options={
+                "ordering": ["-id"],
+                "verbose_name": "user",
+                "verbose_name_plural": "users",
+            },
         ),
         migrations.AlterField(
-            model_name='user',
-            name='about',
-            field=models.TextField(blank=True, max_length=256, verbose_name='about'),
+            model_name="user",
+            name="about",
+            field=models.TextField(blank=True, max_length=256, verbose_name="about"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='avatar',
-            field=models.ImageField(blank=True, upload_to='avatars/', verbose_name='avatar'),
+            model_name="user",
+            name="avatar",
+            field=models.ImageField(
+                blank=True, upload_to="avatars/", verbose_name="avatar"
+            ),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='email',
-            field=models.EmailField(max_length=254, unique=True, verbose_name='email'),
+            model_name="user",
+            name="email",
+            field=models.EmailField(max_length=254, unique=True, verbose_name="email"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='first_name',
-            field=models.CharField(max_length=124, verbose_name='first name'),
+            model_name="user",
+            name="first_name",
+            field=models.CharField(max_length=124, verbose_name="first name"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='github_url',
-            field=models.URLField(blank=True, verbose_name='github url'),
+            model_name="user",
+            name="github_url",
+            field=models.URLField(blank=True, verbose_name="github url"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='last_name',
-            field=models.CharField(max_length=124, verbose_name='last name'),
+            model_name="user",
+            name="last_name",
+            field=models.CharField(max_length=124, verbose_name="last name"),
         ),
         migrations.AlterField(
-            model_name='user',
-            name='phone',
-            field=models.CharField(blank=True, max_length=12, null=True, unique=True, verbose_name='phone'),
+            model_name="user",
+            name="phone",
+            field=models.CharField(
+                blank=True, max_length=12, null=True, unique=True, verbose_name="phone"
+            ),
         ),
     ]

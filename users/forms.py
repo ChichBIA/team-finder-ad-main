@@ -8,7 +8,6 @@ from django.db import IntegrityError
 
 from .models import User
 
-
 PHONE_RE = re.compile(r"^(8\d{10}|\+7\d{10})$")
 
 
@@ -70,7 +69,9 @@ class ProfileEditForm(forms.ModelForm):
         phone = phone.strip()
 
         if not PHONE_RE.match(phone):
-            raise ValidationError("Телефон должен быть в формате 8XXXXXXXXXX или +7XXXXXXXXXX")
+            raise ValidationError(
+                "Телефон должен быть в формате 8XXXXXXXXXX или +7XXXXXXXXXX"
+            )
 
         if phone.startswith("8"):
             phone = "+7" + phone[1:]

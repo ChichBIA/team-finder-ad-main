@@ -53,7 +53,9 @@ def project_detail(request, project_id):
 
 @login_required
 def favorite_projects(request):
-    projects = request.user.favorites.select_related("owner").prefetch_related("participants")
+    projects = request.user.favorites.select_related("owner").prefetch_related(
+        "participants"
+    )
 
     page_obj = paginate_queryset(
         projects,
@@ -124,6 +126,7 @@ def project_edit(request, project_id):
         {"form": form, "is_edit": True},
     )
 
+
 @require_POST
 def toggle_favorite(request, project_id):
     if not request.user.is_authenticated:
@@ -182,7 +185,9 @@ def skills_search(request):
         return JsonResponse([], safe=False)
 
     skills = Skill.objects.filter(name__icontains=query)[:SKILLS_SEARCH_LIMIT]
-    return JsonResponse([{"id": skill.id, "name": skill.name} for skill in skills], safe=False)
+    return JsonResponse(
+        [{"id": skill.id, "name": skill.name} for skill in skills], safe=False
+    )
 
 
 @require_POST
@@ -205,7 +210,9 @@ def skills_add(request, project_id):
         name = (payload.get("name") or "").strip()
         if not name:
             return JsonResponse({"status": "error"}, status=HTTPStatus.BAD_REQUEST)
-        skill, _ = Skill.objects.get_or_create(name__iexact=name, defaults={"name": name})
+        skill, _ = Skill.objects.get_or_create(
+            name__iexact=name, defaults={"name": name}
+        )
 
     project.skills.add(skill)
     return JsonResponse({"id": skill.id, "name": skill.name})

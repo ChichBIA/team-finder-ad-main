@@ -8,62 +8,86 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('projects', '0001_initial'),
+        ("projects", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='project',
-            options={'ordering': ['-created_at'], 'verbose_name': 'project', 'verbose_name_plural': 'projects'},
+            name="project",
+            options={
+                "ordering": ["-created_at"],
+                "verbose_name": "project",
+                "verbose_name_plural": "projects",
+            },
         ),
         migrations.AlterModelOptions(
-            name='skill',
-            options={'verbose_name': 'skill', 'verbose_name_plural': 'skills'},
+            name="skill",
+            options={"verbose_name": "skill", "verbose_name_plural": "skills"},
         ),
         migrations.AlterField(
-            model_name='project',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='created at'),
+            model_name="project",
+            name="created_at",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="created at"),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='description',
-            field=models.TextField(blank=True, verbose_name='description'),
+            model_name="project",
+            name="description",
+            field=models.TextField(blank=True, verbose_name="description"),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='github_url',
-            field=models.URLField(blank=True, verbose_name='github url'),
+            model_name="project",
+            name="github_url",
+            field=models.URLField(blank=True, verbose_name="github url"),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='name',
-            field=models.CharField(max_length=200, verbose_name='name'),
+            model_name="project",
+            name="name",
+            field=models.CharField(max_length=200, verbose_name="name"),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='owner',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_projects', to=settings.AUTH_USER_MODEL, verbose_name='owner'),
+            model_name="project",
+            name="owner",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="owned_projects",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="owner",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='participants',
-            field=models.ManyToManyField(blank=True, related_name='participated_projects', to=settings.AUTH_USER_MODEL, verbose_name='participants'),
+            model_name="project",
+            name="participants",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="participated_projects",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="participants",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='skills',
-            field=models.ManyToManyField(blank=True, related_name='projects', to='projects.skill', verbose_name='skills'),
+            model_name="project",
+            name="skills",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="projects",
+                to="projects.skill",
+                verbose_name="skills",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='status',
-            field=models.CharField(choices=[('open', 'Открыт'), ('closed', 'Закрыт')], default='open', max_length=10, verbose_name='status'),
+            model_name="project",
+            name="status",
+            field=models.CharField(
+                choices=[("open", "Открыт"), ("closed", "Закрыт")],
+                default="open",
+                max_length=10,
+                verbose_name="status",
+            ),
         ),
         migrations.AlterField(
-            model_name='skill',
-            name='name',
-            field=models.CharField(max_length=64, unique=True, verbose_name='name'),
+            model_name="skill",
+            name="name",
+            field=models.CharField(max_length=64, unique=True, verbose_name="name"),
         ),
     ]

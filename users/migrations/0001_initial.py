@@ -12,15 +12,38 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="User",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("password", models.CharField(max_length=128, verbose_name="password")),
-                ("last_login", models.DateTimeField(blank=True, null=True, verbose_name="last login")),
-                ("is_superuser", models.BooleanField(default=False, help_text="Designates that this user has all permissions without explicitly assigning them.", verbose_name="superuser status")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                (
+                    "is_superuser",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates that this user has all permissions without explicitly assigning them.",
+                        verbose_name="superuser status",
+                    ),
+                ),
                 ("email", models.EmailField(max_length=254, unique=True)),
                 ("name", models.CharField(max_length=124)),
                 ("surname", models.CharField(max_length=124)),
                 ("avatar", models.ImageField(blank=True, upload_to="avatars/")),
-                ("phone", models.CharField(blank=True, max_length=12, null=True, unique=True)),
+                (
+                    "phone",
+                    models.CharField(blank=True, max_length=12, null=True, unique=True),
+                ),
                 ("github_url", models.URLField(blank=True)),
                 ("about", models.TextField(blank=True, max_length=256)),
                 ("is_active", models.BooleanField(default=True)),

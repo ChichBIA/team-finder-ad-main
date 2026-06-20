@@ -64,7 +64,9 @@ def user_detail(request, user_id):
 @login_required
 def edit_profile(request):
     if request.method == "POST":
-        form = ProfileEditForm(request.POST or None, request.FILES, instance=request.user)
+        form = ProfileEditForm(
+            request.POST or None, request.FILES, instance=request.user
+        )
         if not form.is_valid():
             return render(
                 request,
@@ -117,9 +119,7 @@ def participants_list(request):
                 owned_projects__in=request.user.participated_projects.all()
             ).distinct()
         elif filter_value == "interested-in-my-projects":
-            participants = User.objects.filter(
-                favorites__owner=request.user
-            ).distinct()
+            participants = User.objects.filter(favorites__owner=request.user).distinct()
         elif filter_value == "participants-of-my-projects":
             participants = (
                 User.objects.filter(participated_projects__owner=request.user)
@@ -151,7 +151,9 @@ def skills_search(request):
         return JsonResponse([], safe=False)
 
     skills = Skill.objects.filter(name__icontains=query)[:SKILLS_SEARCH_LIMIT]
-    return JsonResponse([{"id": skill.id, "name": skill.name} for skill in skills], safe=False)
+    return JsonResponse(
+        [{"id": skill.id, "name": skill.name} for skill in skills], safe=False
+    )
 
 
 @require_POST
@@ -174,7 +176,9 @@ def skills_add(request, user_id):
         name = (payload.get("name") or "").strip()
         if not name:
             return JsonResponse({"status": "error"}, status=HTTPStatus.BAD_REQUEST)
-        skill, _ = Skill.objects.get_or_create(name__iexact=name, defaults={"name": name})
+        skill, _ = Skill.objects.get_or_create(
+            name__iexact=name, defaults={"name": name}
+        )
 
     target_user.skills.add(skill)
     return JsonResponse({"id": skill.id, "name": skill.name})
